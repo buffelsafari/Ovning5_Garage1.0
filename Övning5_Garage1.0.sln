@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Garage10", "Övning5_Garage1.0\Garage10.csproj", "{43849133-6D51-46D5-BA3D-27FC716F7399}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestGarage", "TestGarage\TestGarage.csproj", "{AC1F1BA4-DB76-4CEC-BB9E-2BE2860BCA42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{43849133-6D51-46D5-BA3D-27FC716F7399}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43849133-6D51-46D5-BA3D-27FC716F7399}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43849133-6D51-46D5-BA3D-27FC716F7399}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43849133-6D51-46D5-BA3D-27FC716F7399}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC1F1BA4-DB76-4CEC-BB9E-2BE2860BCA42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC1F1BA4-DB76-4CEC-BB9E-2BE2860BCA42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC1F1BA4-DB76-4CEC-BB9E-2BE2860BCA42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC1F1BA4-DB76-4CEC-BB9E-2BE2860BCA42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2C44D4F6-7413-4895-86EC-A5F163C6DDCC}
+	EndGlobalSection
+EndGlobal

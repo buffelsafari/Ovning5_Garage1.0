@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Garage10.Vehicle
+{
+    class VehicleFactory:IFactory
+    {
+
+
+        public Tuple<string, Type>[] GetParameterInfo(string name)
+        {            
+            // test if name is a valid Vehicle class
+            Type type = Type.GetType($"Garage10.Vehicle.{name}"); //todo get assemby string             
+            Console.WriteLine(type);
+            if (type==null || !type.IsAssignableTo(typeof(BaseVehicle))) 
+            {
+                return null;
+            }           
+            
+            // get the constructor parameters from the first constructor
+            ParameterInfo[] pinfo= type.GetConstructors()[0].GetParameters();            
+            Tuple<string, Type>[] parameters=new Tuple<string, Type>[pinfo.Count()];
+
+            int index = 0;
+            foreach (var v in pinfo)
+            {
+                parameters[index] = new Tuple<string, Type>(v.Name, v.ParameterType);
+                index++;                
+            }
+
+            return parameters;
+        }
+
+        public IVehicle CreateVehicle(string type, Object[] para)
+        {
+
+            Object c = Activator.CreateInstance(Type.GetType($"Garage10.Vehicle.{type}"), para);
+            return (BaseVehicle)c;
+
+        }
+    }
+}
