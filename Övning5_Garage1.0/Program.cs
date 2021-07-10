@@ -3,6 +3,7 @@ using Garage10.IO;
 using Garage10.Parking;
 using Garage10.UI;
 using Garage10.Vehicle;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -17,15 +18,22 @@ namespace Garage10
     {
         static void Main(string[] args)
         {
-            IStorage fileStorage= new FileStorage();
+            IConfiguration configuration = new ConfigurationBuilder().SetBasePath(Environment.CurrentDirectory).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
+
+            
+
+
+            IStorage fileStorage = new FileStorage();
             IStorage testStorage = new TestCollectionStorage();
 
             IUI consoleUI = new ConsoleUI();
             IFactory vFactory = new VehicleFactory(); 
             IGarageHandler garageHandler = new GarageHandler(vFactory);
 
+            
+            
 
-            App app= new App(fileStorage, testStorage, garageHandler, consoleUI);
+            App app= new App(configuration, fileStorage, testStorage, garageHandler, consoleUI);
             app.Init();
             app.Run();
             
@@ -36,5 +44,6 @@ namespace Garage10
         }
 
         
+
     }
 }

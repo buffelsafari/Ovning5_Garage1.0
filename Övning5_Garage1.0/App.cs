@@ -2,6 +2,7 @@
 using Garage10.IO;
 using Garage10.UI;
 using Garage10.Vehicle;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +16,8 @@ namespace Garage10
 {
     class App
     {
+        
+
         //public event Action<object, LogMessage, MessageType> LogEvent;
 
         bool isRunning = true;
@@ -24,39 +27,43 @@ namespace Garage10
         IStorage fileStorage;
         IStorage testStorage;
 
+        IConfiguration configuration;
+
         Dictionary<string, Action<string>> inputActions;
         Dictionary<char, Action<int, string>> parkingOperatorActions;
         Dictionary<string, Action> filterStreamActions;
 
-        public App(IStorage fileStorage, IStorage testStorage, IGarageHandler garageHandler, IUI ui) // preparing for DI
+        public App(IConfiguration configuration, IStorage fileStorage, IStorage testStorage, IGarageHandler garageHandler, IUI ui) // preparing for DI
         {            
             this.garageHandler = garageHandler;
             this.ui = ui;
             this.fileStorage = fileStorage;
             this.testStorage = testStorage;
-            
+            this.configuration = configuration;
         }
 
         public void Init()
         {
-            garageHandler.Init(10);
+            // garage init
+            IConfigurationSection garageSection = configuration.GetSection("app:garage"); 
+            int size = int.TryParse(garageSection["size"], out int result) ? result : 10;
+            Console.WriteLine(size);
+            garageHandler.Init(size);
             garageHandler.LogEvent += OnLogEvent;
 
-            inputActions = new Dictionary<string, Action<string>>()
+
+            // input action init
+            inputActions = new Dictionary<string, Action<string>>();
+            IConfigurationSection inputActionSection = configuration.GetSection("app:input:action");
+            IEnumerable<IConfigurationSection> inputSection = inputActionSection.GetChildren();
+            foreach (IConfigurationSection post in inputSection)
             {
-                {"load", HandleLoad},
-                {"save", HandleSave},
-                {"parking", HandleParking},
-                {"list", HandleListCommand},
-                {"add", HandleAddCommand},
-                {"remove", HandleRemoveCommand},
-                {"help", HandleHelp},
-                {"quit", Quit},
-                {"q", Quit},
-                {"testpop", MakeTestPopulation},
-                {"new", MakeNewGarage},
-                {"types", AvailableTypes}
-            };
+                MethodInfo info=this.GetType().GetMethod(post.Value, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod);
+                Action<string> action=(Action<string>)info.CreateDelegate(typeof(Action<string>), this);
+                inputActions.Add(post.Key, action);
+            }
+            
+
 
             parkingOperatorActions = new Dictionary<char, Action<int, string>>()
             {
