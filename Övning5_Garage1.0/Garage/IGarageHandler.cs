@@ -20,7 +20,6 @@ namespace Garage10.Garage
         void Add(IVehicle vehicle);
         void Remove(int index);
         void Init(int v);
-        void MakeTestPopulation();
         void AddParkingExtras(int index, string name);
         void RemoveParkingExtras(int index, string name);
         Tuple<string, Type>[] GetVehicleParameterInfo(string input);

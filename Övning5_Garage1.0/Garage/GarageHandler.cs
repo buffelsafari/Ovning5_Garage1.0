@@ -16,7 +16,6 @@ namespace Garage10.Garage
         IGarage<IVehicle, IParkingLot> currentGarage;
 
         public int Capacity => currentGarage.Capacity;
-
         public int Count => currentGarage.Count;
 
         public event Action<object, LogMessage, MessageType> LogEvent;
@@ -76,8 +75,7 @@ namespace Garage10.Garage
             while (!reader.EndOfStream)
             {
                 string line=reader.ReadLine();
-
-                Console.WriteLine(line);
+                                
                 switch (line)
                 {
                     case "<header>":
@@ -93,17 +91,15 @@ namespace Garage10.Garage
                         LoadAction = null;
                         continue;
                 
-                }
-
-                
+                }                
                 LoadAction?.Invoke(line);
-
-                
-
             }
         }
-
-        private void HeaderLoad(string line)
+        /// <summary>
+        /// reads the size from the header file and makes a new garage        /// 
+        /// </summary>
+        /// <param name="line">the lines inside the file header</param>
+        private void HeaderLoad(string line)  
         {
             string[] split = line.Split(',');
             int index;
@@ -115,31 +111,27 @@ namespace Garage10.Garage
             }
         }
 
+        /// <summary>
+        /// Reads and create AbstractParking objects from the string
+        /// </summary>
+        /// <param name="line">the lines inside the parking section</param>
         private void ParkingLoad(string line)
-        {
-            
-
+        { 
             string[] split = line.Split(',');
             int index;
 
             if (int.TryParse(split[0], out index))
             {
-
-                AbstractParking[] parkings = new AbstractParking[split.Length - 1];  //todo factory
+                AbstractParking[] parkings = new AbstractParking[split.Length - 1];  
                 for (int i = 1; i < split.Length; i++)
                 {
-                    Type type = Type.GetType($"Garage10.Parking.{split[i]}"); //todo get assemby string             
-                    Console.WriteLine(type);
+                    Type type = Type.GetType($"Garage10.Parking.{split[i]}");             
+                    
                     if (type == null || !type.IsAssignableTo(typeof(AbstractParking)))
                     {
                         return;
                     }
-
                     parkings[i - 1] = (AbstractParking)Activator.CreateInstance(type);
-
-
-
-                    Console.WriteLine(split[i]);
                 }
 
                 AbstractParking bigP = parkings[parkings.Length - 1];
@@ -150,20 +142,24 @@ namespace Garage10.Garage
 
                     if (!result)
                     {
-                        Console.WriteLine("failed to add parking component");
+                        LogEvent?.Invoke(this, LogMessage.COULD_NOT_ADD_FEATURE, MessageType.FAILURE);                        
                     }
                 }
                 currentGarage[index] = bigP;
-                Console.WriteLine(bigP.GetDescription());
+                
             }
             else
             {
-                Console.WriteLine("index not ok");
+                LogEvent?.Invoke(this, LogMessage.OUT_OF_RANGE, MessageType.FAILURE);                
             }
 
 
         }
 
+        /// <summary>
+        /// creates a vehicle and puts it in the index
+        /// </summary>
+        /// <param name="line">the lines inside vehicle section</param>
         private void VehicleLoad(string line)
         {
             string[] split = line.Split(',');           
@@ -171,55 +167,36 @@ namespace Garage10.Garage
             int index;
             if (int.TryParse(split[0], out index))
             {
-
                 Tuple<string, Type>[] tupp = vehicleFactory.GetParameterInfo(split[1]);
 
-                Object[] para = new Object[tupp.Length];
-                for (int i = 0; i < para.Length; i++)
+                if (tupp != null)
                 {
-                    para[i] = Convert.ChangeType(split[i + 2], tupp[i].Item2);
+                    Object[] para = new Object[tupp.Length];
+                    for (int i = 0; i < para.Length; i++)
+                    {
+                        para[i] = Convert.ChangeType(split[i + 2], tupp[i].Item2);
+                    }
+                    currentGarage.AddVehicleAt(vehicleFactory.CreateVehicle(split[1], para), index);
                 }
-
-                currentGarage.AddVehicleAt(vehicleFactory.CreateVehicle(split[1], para), index);
             }
         }
-
-
-        public void MakeTestPopulation()
+                        
+        /// <summary>
+        /// creates a AbstractParking instance from a name
+        /// </summary>
+        /// <param name="name">the name of the class</param>
+        /// <returns></returns>
+        private AbstractParking CreateParkingExtra(string name) 
         {
-            int capacity = 20;
-            currentGarage = new Garage<IVehicle, IParkingLot>(capacity);
-            currentGarage.LogEvent += OnLogEvent;
-            for (int i = 0; i < currentGarage.Capacity; i++)
-            {
-                bool smol;
-                currentGarage[i] = new BasicParking().Add(new Electricity(), out smol).Add(new Lights(), out smol).Add(new Lights(), out smol).Add(new Electricity(), out smol);
-
-                
-                
-                
-
-                
-            }
-
-            currentGarage.AddVehicleAt(new Car("ABC080","porsche","red", 1600, 5.0f), 0);
-            currentGarage.AddVehicleAt(new Car("ABC081","volvo","green", 1400, 2.4f), 1);
-            currentGarage.AddVehicleAt(new Boat("ABC082","nimbus","pink", 3500, 6.2f), 2);
-            currentGarage.AddVehicleAt(new Motorcycle("ABC083","kawazaki","yellow", 200, 280), 3);            
-            currentGarage.AddVehicleAt(new Bus("ABC084","volvo","red", 3200, 40), 4);
-            
-            currentGarage.AddVehicleAt(new Airplane("ABC085","skyace","white",750, 2), 5);
-
-        }
-
-        private AbstractParking CreateParkingExtra(string name) // make a factory class?
-        {
-            Object c = Activator.CreateInstance(Type.GetType($"Garage10.Parking.{name}"));
-            
+            Object c = Activator.CreateInstance(Type.GetType($"Garage10.Parking.{name}"));            
             return (AbstractParking)c;
-
         }
 
+        /// <summary>
+        /// Creates and add a AbstractParking component at index
+        /// </summary>
+        /// <param name="index">the parking lot</param>
+        /// <param name="name">name of the AbstractParking component</param>
         public void AddParkingExtras(int index, string name)
         {
             if (index >= 0 && index < currentGarage.Capacity)
@@ -230,8 +207,7 @@ namespace Garage10.Garage
                 {
                     LogEvent?.Invoke(this, LogMessage.NOT_A_VALID_FEATURE, MessageType.FAILURE);
                     return;
-                }
-                
+                }                
 
                 AbstractParking ab = CreateParkingExtra(name);
                 bool result;
@@ -244,16 +220,19 @@ namespace Garage10.Garage
                 {
                     LogEvent?.Invoke(this, LogMessage.COULD_NOT_ADD_FEATURE, MessageType.FAILURE);
                 }
-
             }
             else
             {
                 LogEvent?.Invoke(this, LogMessage.OUT_OF_RANGE, MessageType.FAILURE);
-            }
-            
+            }            
         }
 
-        public void RemoveParkingExtras(int index, string name)  // todo refactorisera med ovanstående
+        /// <summary>
+        /// Removes a AbstractParking component from a parking lot
+        /// </summary>
+        /// <param name="index">the parking lot</param>
+        /// <param name="name">name of the component</param>
+        public void RemoveParkingExtras(int index, string name)  
         {
             if (index >= 0 && index < currentGarage.Capacity)
             {
@@ -275,8 +254,6 @@ namespace Garage10.Garage
                 {
                     LogEvent?.Invoke(this, LogMessage.COULD_NOT_REMOVE_FEATURE, MessageType.FAILURE);
                 }
-
-
             }
             else
             {
@@ -284,13 +261,21 @@ namespace Garage10.Garage
             }
         }
 
-
+        /// <summary>
+        /// the entry method for getting a stream of query result
+        /// </summary>
+        /// <param name="stream">the stream</param>
+        /// <param name="line">the filter expression</param>
         public void FilterCommand(Stream stream, string line)
         {
             GetFilteredDataStream(stream, TranslateFilterLine(line, currentGarage));             
         }
 
-
+        /// <summary>
+        /// writes some vehicles on the stream
+        /// </summary>
+        /// <param name="stream">the query stream</param>
+        /// <param name="vehicles">a enumerable IVehicle collection</param>
         private void GetFilteredDataStream(Stream stream,IEnumerable<IVehicle> vehicles)
         {
             long start = stream.Position;
@@ -334,6 +319,12 @@ namespace Garage10.Garage
 
 
         //----------------------------------------------------------------------------
+        /// <summary>
+        /// makes a linq ed selection from the string
+        /// </summary>
+        /// <param name="str">the filter expression</param>
+        /// <param name="garage">the garage with an enumerable collection </param>
+        /// <returns></returns>
         private static IEnumerable<IVehicle> TranslateFilterLine(string str, IGarage<IVehicle, IParkingLot> garage) 
         {
 

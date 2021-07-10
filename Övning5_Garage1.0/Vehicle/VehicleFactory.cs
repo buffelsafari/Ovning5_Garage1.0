@@ -12,27 +12,32 @@ namespace Garage10.Vehicle
 
 
         public Tuple<string, Type>[] GetParameterInfo(string name)
-        {            
+        {
             // test if name is a valid Vehicle class
-            Type type = Type.GetType($"Garage10.Vehicle.{name}"); //todo get assemby string             
-            Console.WriteLine(type);
-            if (type==null || !type.IsAssignableTo(typeof(BaseVehicle))) 
-            {
-                return null;
-            }           
-            
-            // get the constructor parameters from the first constructor
-            ParameterInfo[] pinfo= type.GetConstructors()[0].GetParameters();            
-            Tuple<string, Type>[] parameters=new Tuple<string, Type>[pinfo.Count()];
+            bool error=false;  
+            Type type = Type.GetType($"Garage10.Vehicle.{name}", error); //todo get assemby string             
 
-            int index = 0;
-            foreach (var v in pinfo)
+            if (!error)
             {
-                parameters[index] = new Tuple<string, Type>(v.Name, v.ParameterType);
-                index++;                
+                if (type == null || !type.IsAssignableTo(typeof(BaseVehicle)))
+                {
+                    return null;
+                }
+
+                // get the constructor parameters from the first constructor
+                ParameterInfo[] pinfo = type.GetConstructors()[0].GetParameters();
+                Tuple<string, Type>[] parameters = new Tuple<string, Type>[pinfo.Count()];
+
+                int index = 0;
+                foreach (var v in pinfo)
+                {
+                    parameters[index] = new Tuple<string, Type>(v.Name, v.ParameterType);
+                    index++;
+                }
+
+                return parameters;
             }
-
-            return parameters;
+            return null;
         }
 
         public IVehicle CreateVehicle(string type, Object[] para)

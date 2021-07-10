@@ -3,6 +3,7 @@ using Garage10.IO;
 using Garage10.UI;
 using Garage10.Vehicle;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,70 +17,98 @@ namespace Garage10
 {
     class App
     {
-        
+        private bool isRunning = true;
+        private Stream stream;
+        private readonly IUI ui;
+        private readonly IGarageHandler garageHandler;        
+        private readonly IStorage fileStorage;
+        private readonly IStorage testStorage;
 
-        //public event Action<object, LogMessage, MessageType> LogEvent;
+        private IConfiguration configuration;
 
-        bool isRunning = true;
-        Stream stream;
-        IUI ui;
-        IGarageHandler garageHandler;        
-        IStorage fileStorage;
-        IStorage testStorage;
+        private Dictionary<string, Action<string>> inputActions;
+        private Dictionary<char, Action<int, string>> parkingOperatorActions;
+        private Dictionary<string, Action> filterStreamActions;
 
-        IConfiguration configuration;
-
-        Dictionary<string, Action<string>> inputActions;
-        Dictionary<char, Action<int, string>> parkingOperatorActions;
-        Dictionary<string, Action> filterStreamActions;
-
-        public App(IConfiguration configuration, IStorage fileStorage, IStorage testStorage, IGarageHandler garageHandler, IUI ui) // preparing for DI
+        public App(IServiceProvider serviceProvider) // preparing for DI
         {            
-            this.garageHandler = garageHandler;
-            this.ui = ui;
-            this.fileStorage = fileStorage;
-            this.testStorage = testStorage;
-            this.configuration = configuration;
+            this.garageHandler = serviceProvider.GetService<IGarageHandler>();
+            this.ui = serviceProvider.GetService<IUI>();
+            this.fileStorage = serviceProvider.GetServices<IStorage>().First(s => s.GetType() == typeof(FileStorage)); 
+            this.testStorage = serviceProvider.GetServices<IStorage>().First(s => s.GetType() == typeof(FileStorage));
+            this.configuration = GetConfig();
         }
+
+        
 
         public void Init()
         {
             // garage init
             IConfigurationSection garageSection = configuration.GetSection("app:garage"); 
             int size = int.TryParse(garageSection["size"], out int result) ? result : 10;
-            Console.WriteLine(size);
+            
             garageHandler.Init(size);
             garageHandler.LogEvent += OnLogEvent;
 
+            LoadInputActionConfig(configuration.GetSection("app:input:action"));
+            LoadParkingOperatorActionConfig(configuration.GetSection("app:input:parkingoperatoraction"));
+            LoadFilterStreamActionConfig(configuration.GetSection("app:input:filterstreamaction"));
+           
+        }
 
-            // input action init
-            inputActions = new Dictionary<string, Action<string>>();
-            IConfigurationSection inputActionSection = configuration.GetSection("app:input:action");
-            IEnumerable<IConfigurationSection> inputSection = inputActionSection.GetChildren();
+        #region cofiguration methods
+        private IConfiguration GetConfig()  // stolen from NET21B
+        {
+            return new ConfigurationBuilder()
+               .SetBasePath(Environment.CurrentDirectory)
+               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+               .Build();
+        }
+
+        private void LoadInputActionConfig(IConfigurationSection configSection)
+        {            
+            inputActions = new Dictionary<string, Action<string>>();            
+            IEnumerable<IConfigurationSection> inputSection = configSection.GetChildren();
             foreach (IConfigurationSection post in inputSection)
             {
-                MethodInfo info=this.GetType().GetMethod(post.Value, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod);
-                Action<string> action=(Action<string>)info.CreateDelegate(typeof(Action<string>), this);
+                MethodInfo info = this.GetType().GetMethod(post.Value, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod);
+                Action<string> action = (Action<string>)info.CreateDelegate(typeof(Action<string>), this);
                 inputActions.Add(post.Key, action);
             }
-            
-
-
-            parkingOperatorActions = new Dictionary<char, Action<int, string>>()
-            {
-                {'+', garageHandler.AddParkingExtras},
-                {'-', garageHandler.RemoveParkingExtras}
-            };
-
-            filterStreamActions = new Dictionary<string, Action>() // todo local methods
-            {
-                {"begin",  ui.StartDataRows },
-                {"end",  ui.EndDataRows},
-                {"row", ui.NewDataRow }
-
-            };
-
         }
+
+        private void LoadParkingOperatorActionConfig(IConfigurationSection configSection)
+        {
+            parkingOperatorActions = new Dictionary<char, Action<int, string>>();            
+            IEnumerable<IConfigurationSection> inputSection = configSection.GetChildren();
+            foreach (IConfigurationSection post in inputSection)
+            {
+                MethodInfo info = garageHandler.GetType().GetMethod(post.Value, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
+                Action<int, string> action = (Action<int, string>)info.CreateDelegate(typeof(Action<int, string>), garageHandler);
+                char c;
+                if (char.TryParse(post.Key, out c))
+                {
+                    parkingOperatorActions.Add(c, action);
+                }
+            }
+        }
+
+        private void LoadFilterStreamActionConfig(IConfigurationSection configSection)
+        {
+            filterStreamActions = new Dictionary<string, Action>();  
+            IEnumerable<IConfigurationSection> inputSection = configSection.GetChildren();
+            foreach (IConfigurationSection post in inputSection)
+            {
+                MethodInfo info = ui.GetType().GetMethod(post.Value, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
+                Action action = (Action)info.CreateDelegate(typeof(Action), ui);
+
+                filterStreamActions.Add(post.Key, action);
+
+            }
+        }
+        #endregion
+
+
 
         public void HandleInput(string input)  
         {
@@ -96,18 +125,36 @@ namespace Garage10
             
         }
 
+        #region input actions
+
         private void HandleHelp(string input)
         {
             ui.PrintHelpMessage();
         }
         private void HandleLoad(string input)
         {
-            fileStorage.Load(garageHandler);
+            try
+            {
+                fileStorage.Load(garageHandler);
+                ui.OnLogEvent(this, LogMessage.FILE_LOADED, MessageType.SUCCESS);
+            }
+            catch (Exception e)
+            {
+                ui.OnLogEvent(this, LogMessage.IO_ERROR, MessageType.FAILURE);
+            }
         }
 
         private void HandleSave(string input)
         {
-            fileStorage.Save(garageHandler);
+            try
+            {
+                fileStorage.Save(garageHandler);
+                ui.OnLogEvent(this, LogMessage.FILE_SAVED, MessageType.SUCCESS);
+            }
+            catch (Exception e)
+            {
+                ui.OnLogEvent(this, LogMessage.IO_ERROR, MessageType.FAILURE);
+            }
         }
 
         private void HandleParking(string input)  //todo refactory
@@ -154,8 +201,15 @@ namespace Garage10
 
         private void MakeTestPopulation(string input)
         {
-            testStorage.Load(garageHandler);
-            //garageHandler.MakeTestPopulation();
+            try
+            {
+                testStorage.Load(garageHandler);
+                ui.OnLogEvent(this, LogMessage.FILE_LOADED, MessageType.SUCCESS);
+            }
+            catch(Exception e)
+            {
+                ui.OnLogEvent(this, LogMessage.IO_ERROR, MessageType.FAILURE);
+            }
         }
 
         private void Quit(string input)
@@ -175,8 +229,7 @@ namespace Garage10
         }
 
         private void HandleAddCommand(string input)
-        {
-                        
+        {                      
             
             char[] chrstr=input.ToCharArray();   
             chrstr[0]=char.ToUpper(chrstr[0]); // make first letter big to match Class name
@@ -219,24 +272,26 @@ namespace Garage10
             stream.Flush();
         }
 
+        #endregion
+
+
+        //-------------------------------------------------------------------------------------------------
         public void Run()
         {
-            stream = new MemoryStream();
+            stream = new MemoryStream(); // stream for getting garage data
             ui.PrintWelcomeMessage();
 
-            while (isRunning)
+            while (isRunning)   // the main loop
             {
                 string input=ui.GetCommandLine();
-
                 HandleInput(input);
-
-                HandleStream();  
-                
+                HandleStream();
             }
 
             ui.PrintQuitMessage();
             stream.Close();
         }
+        //-------------------------------------------------------------------------------------------------
 
         private void HandleStream()
         {
@@ -267,6 +322,7 @@ namespace Garage10
 
         
 
+        // events from the garagehandler, resending them to UI
         void OnLogEvent(object sender, LogMessage logMessage, MessageType messageType)
         {            
             ui.OnLogEvent(sender, logMessage, messageType);            

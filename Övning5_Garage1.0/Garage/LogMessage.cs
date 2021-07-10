@@ -23,6 +23,9 @@ namespace Garage10.Garage
         NOT_A_VALID_FEATURE,
         PARKING_FEATURE_REMOVED,
         COULD_NOT_REMOVE_FEATURE,
+        FILE_LOADED,
+        FILE_SAVED,
+        IO_ERROR
 
     }
 

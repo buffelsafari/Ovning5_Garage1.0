@@ -47,22 +47,12 @@ namespace Garage10.IO
             );
         
         public void Load(ILoadable thing)
-        {
-            
-            
-            
-
-            
+        {                       
             byte[] data = Encoding.ASCII.GetBytes(file);
             MemoryStream stm = new MemoryStream(data, 0, data.Length);
            
-
-
-
             StreamReader reader = new StreamReader(stm);
             thing.Load(reader);
-            
-
             
         }
 

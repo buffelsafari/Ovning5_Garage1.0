@@ -4,6 +4,8 @@ using Garage10.Parking;
 using Garage10.UI;
 using Garage10.Vehicle;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ServiceFabric.Services.Remoting;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -16,31 +18,26 @@ namespace Garage10
 {
     class Program
     {
+
+        
+
         static void Main(string[] args)
-        {
-            IConfiguration configuration = new ConfigurationBuilder().SetBasePath(Environment.CurrentDirectory).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
-
+        {            
+            
+            ServiceCollection serviceCollection = new ServiceCollection(); 
+            serviceCollection.AddSingleton<IStorage, FileStorage>();
+            serviceCollection.AddSingleton<IStorage, TestCollectionStorage>();
+            serviceCollection.AddSingleton<IGarageHandler, GarageHandler>();
+            serviceCollection.AddSingleton<IUI, ConsoleUI>();
+            serviceCollection.AddSingleton<IFactory, VehicleFactory>();
+            IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
             
 
 
-            IStorage fileStorage = new FileStorage();
-            IStorage testStorage = new TestCollectionStorage();
-
-            IUI consoleUI = new ConsoleUI();
-            IFactory vFactory = new VehicleFactory(); 
-            IGarageHandler garageHandler = new GarageHandler(vFactory);
-
-            
-            
-
-            App app= new App(configuration, fileStorage, testStorage, garageHandler, consoleUI);
+            App app= new App(serviceProvider);
             app.Init();
             app.Run();
             
-            
-            
-
-
         }
 
         

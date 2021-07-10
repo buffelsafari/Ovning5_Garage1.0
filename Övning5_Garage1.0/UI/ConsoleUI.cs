@@ -106,12 +106,32 @@ namespace Garage10.UI
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("help");
             Console.WriteLine("quit");
-            Console.WriteLine("types (lists available vehicle types)");
-            Console.WriteLine("new {size} (creates a new garage)");
+            Console.Write("load");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(" (loads from a file)");
+            Console.ForegroundColor = ConsoleColor.Yellow;            
+            Console.Write("save");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(" (saves to a file)");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write("parking n+lights, parking n-electicity");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(" where n is the parking lot");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write("types");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(" (lists available vehicle types)");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write("new {size}");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(" (creates a new garage)");
+            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("add {type}");
             Console.WriteLine("remove {lot}");
             Console.WriteLine("list {type=car&weight<500}...");
-            Console.WriteLine("testpop (get a test population)");
+            Console.Write("test");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(" (loads a tespopulation from a fake loader)");
             Console.ForegroundColor = ConsoleColor.White;
         }
 
@@ -128,9 +148,10 @@ namespace Garage10.UI
         public void PrintWelcomeMessage()
         {
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine("***********************");
-            Console.WriteLine("* Welcome to Garage10 *");
-            Console.WriteLine("***********************");
+            Console.WriteLine();
+            Console.WriteLine("\t\t***********************");
+            Console.WriteLine("\t\t* Welcome to Garage10 *");
+            Console.WriteLine("\t\t***********************");
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.White;
 
