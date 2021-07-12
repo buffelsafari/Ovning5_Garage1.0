@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,8 +29,8 @@ namespace Garage10.Vehicle
 
         public override void Save(StreamWriter writer)
         {
-            base.Save(writer);
-            writer.Write(Engine + "\n");
+            base.Save(writer);            
+            writer.Write(Engine.ToString(CultureInfo.InvariantCulture) + "\n");
             
             
         }

@@ -3,6 +3,7 @@ using Garage10.Vehicle;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -85,7 +86,7 @@ namespace Garage10.UI
                 try
                 {
                     // todo nicer exeption
-                    Object ob = Convert.ChangeType(line, para[i].Item2);  
+                    Object ob = Convert.ChangeType(line, para[i].Item2, CultureInfo.InvariantCulture);  
                     outPara[i] = ob; 
                 }
                 catch(Exception e)

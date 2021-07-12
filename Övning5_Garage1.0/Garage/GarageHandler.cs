@@ -2,6 +2,7 @@
 using Garage10.Vehicle;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -174,7 +175,7 @@ namespace Garage10.Garage
                     Object[] para = new Object[tupp.Length];
                     for (int i = 0; i < para.Length; i++)
                     {
-                        para[i] = Convert.ChangeType(split[i + 2], tupp[i].Item2);
+                        para[i] = Convert.ChangeType(split[i + 2], tupp[i].Item2, CultureInfo.InvariantCulture);
                     }
                     currentGarage.AddVehicleAt(vehicleFactory.CreateVehicle(split[1], para), index);
                 }
@@ -305,7 +306,11 @@ namespace Garage10.Garage
                     }
                     else
                     {
-                        writer.Write(p.Name + ":" + val.ToString() + "\n");
+                        if (val.GetType() == typeof(float))
+                        {
+                            val = ((float)val).ToString("0.00",CultureInfo.InvariantCulture);                                                       
+                        }
+                        writer.Write($"{p.Name}:{val}\n");
                     }
                 }
             }
@@ -411,7 +416,7 @@ namespace Garage10.Garage
                         case "Single":
                             propValue = (Single)info.GetValue(vehicle);
                             Single floatCompare;
-                            Single.TryParse(compareValue, out floatCompare);
+                            Single.TryParse(compareValue,NumberStyles.AllowDecimalPoint ,CultureInfo.InvariantCulture, out floatCompare);
                             return CompareLogic((Single)propValue, floatCompare, logicOperator);
 
                     }                   
