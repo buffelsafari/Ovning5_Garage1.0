@@ -129,7 +129,7 @@ namespace Garage10.UI
             Console.WriteLine("add {type}");
             Console.WriteLine("remove {lot}");
             Console.WriteLine("list {type=car&weight<500}...");
-            Console.Write("test");
+            Console.Write("testpop");
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine(" (loads a tespopulation from a fake loader)");
             Console.ForegroundColor = ConsoleColor.White;

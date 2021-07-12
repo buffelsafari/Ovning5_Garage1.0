@@ -35,7 +35,7 @@ namespace Garage10
             this.garageHandler = serviceProvider.GetService<IGarageHandler>();
             this.ui = serviceProvider.GetService<IUI>();
             this.fileStorage = serviceProvider.GetServices<IStorage>().First(s => s.GetType() == typeof(FileStorage)); 
-            this.testStorage = serviceProvider.GetServices<IStorage>().First(s => s.GetType() == typeof(FileStorage));
+            this.testStorage = serviceProvider.GetServices<IStorage>().First(s => s.GetType() == typeof(TestCollectionStorage));
             this.configuration = GetConfig();
         }
 

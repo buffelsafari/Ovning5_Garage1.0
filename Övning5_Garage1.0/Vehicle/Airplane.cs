@@ -15,8 +15,7 @@ namespace Garage10.Vehicle
         {
             if (!ValidatePropellers(propellers))
             {
-                isValid = false;
-                Debug.Write("propeller number not valid");
+                isValid = false;                
             }
             this.Propellers = propellers;
         }

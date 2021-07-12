@@ -16,8 +16,7 @@ namespace Garage10.Vehicle
         {
             if (!ValidateLength(length))
             {
-                isValid = false;
-                Debug.Write("length not valid");
+                isValid = false;                
             }
             this.Length = length;
         }

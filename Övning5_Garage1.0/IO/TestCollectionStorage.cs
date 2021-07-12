@@ -58,7 +58,7 @@ namespace Garage10.IO
 
         public void Save(ISavable thing)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

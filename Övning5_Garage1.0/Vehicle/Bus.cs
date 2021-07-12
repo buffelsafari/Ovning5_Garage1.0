@@ -16,8 +16,7 @@ namespace Garage10.Vehicle
         {
             if (!ValidateSeats(seats))
             {
-                isValid = false;
-                Debug.Write("seats not valid");
+                isValid = false;                
             }
             this.Seats = seats;
         }

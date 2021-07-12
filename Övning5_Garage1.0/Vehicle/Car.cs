@@ -16,8 +16,7 @@ namespace Garage10.Vehicle
         {
             if (!ValidateEngine(engine))
             {
-                isValid = false;
-                Debug.Write("engine not valid");
+                isValid = false;                
             }
             this.Engine = engine;            
         }

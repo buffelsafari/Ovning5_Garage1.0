@@ -25,29 +25,25 @@ namespace Garage10.Vehicle
             regNumber = regNumber.ToUpper();
             if (!ValidateRegNumber(regNumber))
             {
-                isValid = false;
-                Debug.Write("registration number not valid");
+                isValid = false;                
             }
             this.RegNumber = regNumber;
 
             if (!ValidateBrand(brand))
             {
-                isValid = false;
-                Debug.Write("brand name not valid");
+                isValid = false;                
             }
             this.Brand = brand;
 
             if (!ValidateColor(color))
             {
-                isValid = false;
-                Debug.Write("color name not valid");
+                isValid = false;                
             }
             this.Color = color;
 
             if (!ValidateWeight(weight))
             {
-                isValid = false;
-                Debug.Write("weight not valid");
+                isValid = false;                
             }
             this.Weight = weight;
         }

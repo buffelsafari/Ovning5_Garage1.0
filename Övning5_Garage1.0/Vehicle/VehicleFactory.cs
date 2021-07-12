@@ -24,18 +24,10 @@ namespace Garage10.Vehicle
                     return null;
                 }
 
-                // get the constructor parameters from the first constructor
-                ParameterInfo[] pinfo = type.GetConstructors()[0].GetParameters();
-                Tuple<string, Type>[] parameters = new Tuple<string, Type>[pinfo.Count()];
-
-                int index = 0;
-                foreach (var v in pinfo)
-                {
-                    parameters[index] = new Tuple<string, Type>(v.Name, v.ParameterType);
-                    index++;
-                }
-
-                return parameters;
+                // get the constructor parameters from the first constructor                
+                              
+                return type.GetConstructors()[0].GetParameters().Select((a) => new Tuple<string, Type>(a.Name, a.ParameterType)).ToArray();
+               
             }
             return null;
         }
